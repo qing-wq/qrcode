@@ -1,12 +1,12 @@
 package ink.whi.qrcode.controller;
 
-import com.github.hui.quick.plugin.qrcode.helper.QrCodeGenerateHelper;
+import com.github.hui.quick.plugin.base.DomUtil;
+import com.github.hui.quick.plugin.base.constants.MediaType;
 import com.github.hui.quick.plugin.qrcode.wrapper.QrCodeGenWrapper;
 import com.github.hui.quick.plugin.qrcode.wrapper.QrCodeOptions;
 import com.google.zxing.WriterException;
 import ink.whi.qrcode.utils.IpUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,7 +16,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Map;
@@ -45,7 +44,7 @@ public class QrLoginRest {
         String qrUrl = pref + "scan?id=" + id;  // 二维码中的URL
         String qrCode = QrCodeGenWrapper.of(qrUrl).setW(200).setDrawPreColor(Color.RED)
                 .setDrawStyle(QrCodeOptions.DrawStyle.CIRCLE).asString();
-        data.put("qrcode", qrCode);
+        data.put("qrcode", DomUtil.toDomSrc(qrCode, MediaType.ImageJpg));
         return "login";
     }
 
@@ -56,7 +55,7 @@ public class QrLoginRest {
      * @param id
      * @return
      */
-    @GetMapping(path = "subscribe", produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    @GetMapping(path = "subscribe", produces = {org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE})
     public SseEmitter subscribe(String id) {
         SseEmitter sseEmitter = new SseEmitter(5 * 60 * 1000L);
         cache.put(id, sseEmitter);
@@ -110,7 +109,7 @@ public class QrLoginRest {
             return "未登录！";
         }
         // fixme: 这里实现的不太优雅
-        Optional<Cookie> cookie = Stream.of(cookies).filter(s -> s.getName().equalsIgnoreCase("qrlogin")).findFirst();
+        Optional<Cookie> cookie = Stream.of(cookies).filter(s -> s.getName().equalsIgnoreCase("qrLogin")).findFirst();
         return cookie.map(cookie1 -> "欢迎进入首页: " + cookie1.getValue()).orElse("未登录");
     }
 }

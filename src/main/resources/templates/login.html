@@ -28,7 +28,7 @@
             } else if (text.startsWith('login#')) {
                 // 登录格式为 login#cookie
                 var cookie = text.substring(6);
-                document.cookie = cookie;
+                document.cookie = "qrLogin=" + cookie;
                 window.location.href = [[${redirect}]];
                 source.close();
             }
